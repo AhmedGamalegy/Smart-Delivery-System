@@ -1,0 +1,1211 @@
+[
+  {
+    "id": "tab_delivery",
+    "type": "tab",
+    "label": "Smart Delivery",
+    "disabled": false,
+    "info": "Smart Delivery Tracking - Node-RED side (integration + display only).\n\nRaspberry Pi = brain. Node-RED never decides anything: it shows what the Pi publishes,\nsends Telegram / Email notifications, and forwards Dashboard button presses as MQTT commands.\n\nBEFORE DEPLOY: set the 4 Environment Variables of this tab (double-click the tab) and the HiveMQ broker + Email credentials.",
+    "env": [
+      {
+        "name": "SHIPMENT_ID",
+        "value": "SH001",
+        "type": "str"
+      },
+      {
+        "name": "TELEGRAM_BOT_TOKEN",
+        "value": "",
+        "type": "str"
+      },
+      {
+        "name": "TELEGRAM_CHAT_ID",
+        "value": "",
+        "type": "str"
+      },
+      {
+        "name": "MANAGER_EMAIL",
+        "value": "",
+        "type": "str"
+      }
+    ]
+  },
+  {
+    "id": "tls1",
+    "type": "tls-config",
+    "name": "HiveMQ TLS",
+    "cert": "",
+    "key": "",
+    "ca": "",
+    "certname": "",
+    "keyname": "",
+    "caname": "",
+    "servername": "",
+    "verifyservercert": true,
+    "alpnprotocol": ""
+  },
+  {
+    "id": "broker1",
+    "type": "mqtt-broker",
+    "name": "HiveMQ Cloud",
+    "broker": "YOUR-CLUSTER-ID.s1.eu.hivemq.cloud",
+    "port": "8883",
+    "tls": "tls1",
+    "clientid": "",
+    "autoConnect": true,
+    "usetls": true,
+    "protocolVersion": "4",
+    "keepalive": "60",
+    "cleansession": true,
+    "autoUnsubscribe": true,
+    "birthTopic": "",
+    "birthQos": "0",
+    "birthRetain": "false",
+    "birthPayload": "",
+    "birthMsg": {},
+    "closeTopic": "",
+    "closeQos": "0",
+    "closeRetain": "false",
+    "closePayload": "",
+    "closeMsg": {},
+    "willTopic": "",
+    "willQos": "0",
+    "willRetain": "false",
+    "willPayload": "",
+    "willMsg": {},
+    "userProps": "",
+    "sessionExpiry": ""
+  },
+  {
+    "id": "ui_base1",
+    "type": "ui-base",
+    "name": "Smart Delivery",
+    "path": "/dashboard",
+    "includeClientData": true,
+    "acceptsClientConfig": [
+      "ui-notification",
+      "ui-control"
+    ],
+    "showPathInSidebar": false,
+    "showPageTitle": true,
+    "navigationStyle": "default",
+    "titleBarStyle": "default"
+  },
+  {
+    "id": "ui_theme1",
+    "type": "ui-theme",
+    "name": "Default Theme",
+    "colors": {
+      "surface": "#ffffff",
+      "primary": "#0094CE",
+      "bgPage": "#eeeeee",
+      "groupBg": "#ffffff",
+      "groupOutline": "#cccccc"
+    },
+    "sizes": {
+      "pagePadding": "12px",
+      "groupGap": "12px",
+      "groupBorderRadius": "4px",
+      "widgetGap": "12px"
+    }
+  },
+  {
+    "id": "ui_page1",
+    "type": "ui-page",
+    "name": "Delivery",
+    "ui": "ui_base1",
+    "path": "/delivery",
+    "icon": "truck-delivery",
+    "layout": "grid",
+    "theme": "ui_theme1",
+    "breakpoints": [
+      {
+        "name": "Default",
+        "px": "0",
+        "cols": "3"
+      },
+      {
+        "name": "Tablet",
+        "px": "576",
+        "cols": "6"
+      },
+      {
+        "name": "Small Desktop",
+        "px": "768",
+        "cols": "9"
+      },
+      {
+        "name": "Desktop",
+        "px": "1024",
+        "cols": "12"
+      }
+    ],
+    "order": 1,
+    "className": "",
+    "visible": "true",
+    "disabled": "false"
+  },
+  {
+    "id": "g_ship",
+    "type": "ui-group",
+    "name": "Shipment",
+    "page": "ui_page1",
+    "width": "6",
+    "height": "1",
+    "order": 1,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "g_loc",
+    "type": "ui-group",
+    "name": "Location (OwnTracks)",
+    "page": "ui_page1",
+    "width": "6",
+    "height": "1",
+    "order": 2,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "g_act",
+    "type": "ui-group",
+    "name": "Delivery Action",
+    "page": "ui_page1",
+    "width": "6",
+    "height": "1",
+    "order": 3,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "g_issue",
+    "type": "ui-group",
+    "name": "Issue Report",
+    "page": "ui_page1",
+    "width": "6",
+    "height": "1",
+    "order": 4,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "g_log",
+    "type": "ui-group",
+    "name": "Event / Trip Log",
+    "page": "ui_page1",
+    "width": "12",
+    "height": "1",
+    "order": 5,
+    "showTitle": true,
+    "className": "",
+    "visible": "true",
+    "disabled": "false",
+    "groupType": "default"
+  },
+  {
+    "id": "c1",
+    "type": "comment",
+    "z": "tab_delivery",
+    "name": "1) EVENTS from the Raspberry Pi -> Telegram / Email / Dashboard",
+    "info": "",
+    "x": 330,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "in_events",
+    "type": "mqtt in",
+    "z": "tab_delivery",
+    "name": "Pi events",
+    "topic": "delivery/+/events",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 100,
+    "wires": [
+      [
+        "fn_dedupe"
+      ]
+    ]
+  },
+  {
+    "id": "fn_dedupe",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Drop duplicate events",
+    "func": "// Simple extra protection: same event + same timestamp = same message delivered twice.\n// (The Raspberry Pi is still the real source of truth for duplicates.)\nconst p = msg.payload;\nif (!p || typeof p !== \"object\" || !p.event) { return null; }\nconst key = p.event + \"|\" + (p.timestamp || \"\");\nlet seen = flow.get(\"seen_events\") || [];\nif (seen.includes(key)) {\n    node.status({fill: \"yellow\", shape: \"ring\", text: \"duplicate dropped: \" + p.event});\n    return null;\n}\nseen.push(key);\nflow.set(\"seen_events\", seen.slice(-50));\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 350,
+    "y": 100,
+    "wires": [
+      [
+        "sw_event",
+        "fn_log",
+        "dbg_events"
+      ]
+    ]
+  },
+  {
+    "id": "dbg_events",
+    "type": "debug",
+    "z": "tab_delivery",
+    "name": "All events (debug)",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 590,
+    "y": 40,
+    "wires": []
+  },
+  {
+    "id": "fn_log",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Add to event log",
+    "func": "// Keep the last 20 events and turn them into one text block for the Dashboard.\nconst p = msg.payload;\nconst when = String(p.timestamp || \"\").replace(\"T\", \" \");\nlet line = when + \"   \" + p.event;\nif (p.reason)     { line += \"   (\" + p.reason + \")\"; }\nif (p.card)       { line += \"   card=\" + p.card; }\nif (p.issue_type) { line += \"   [\" + p.issue_type + \"]\"; }\nlet log = flow.get(\"event_log\") || [];\nlog.unshift(line);\nlog = log.slice(0, 20);\nflow.set(\"event_log\", log);\nreturn { payload: log.join(\"\\n\") };",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 590,
+    "y": 100,
+    "wires": [
+      [
+        "ui_log"
+      ]
+    ]
+  },
+  {
+    "id": "ui_log",
+    "type": "ui-template",
+    "z": "tab_delivery",
+    "group": "g_log",
+    "page": "",
+    "ui": "",
+    "name": "Event / trip log",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "head": "",
+    "format": "<template>\n  <pre style=\"white-space: pre-wrap; font-family: monospace; font-size: 13px; margin: 0;\">{{ msg && msg.payload ? msg.payload : \"No events yet\" }}</pre>\n</template>",
+    "storeOutMessages": true,
+    "passthru": false,
+    "resendOnRefresh": true,
+    "templateScope": "local",
+    "className": "",
+    "x": 840,
+    "y": 100,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "sw_event",
+    "type": "switch",
+    "z": "tab_delivery",
+    "name": "Route by event",
+    "property": "payload.event",
+    "propertyType": "msg",
+    "rules": [
+      {
+        "t": "eq",
+        "v": "ready_for_pickup",
+        "vt": "str"
+      },
+      {
+        "t": "eq",
+        "v": "delivered",
+        "vt": "str"
+      },
+      {
+        "t": "eq",
+        "v": "issue_reported",
+        "vt": "str"
+      },
+      {
+        "t": "regex",
+        "v": "^(picked_up|customer_verified|nfc_rejected)$",
+        "vt": "str",
+        "case": false
+      }
+    ],
+    "checkall": "true",
+    "repair": false,
+    "outputs": 4,
+    "x": 350,
+    "y": 220,
+    "wires": [
+      [
+        "fn_telegram"
+      ],
+      [
+        "fn_mail_delivered"
+      ],
+      [
+        "fn_issue_text",
+        "fn_mail_issue"
+      ],
+      [
+        "fn_nfc_text"
+      ]
+    ]
+  },
+  {
+    "id": "fn_telegram",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Build Telegram request",
+    "func": "// Exactly ONE Telegram message in the whole delivery: triggered by the Pi's ready_for_pickup event.\nconst token  = env.get(\"TELEGRAM_BOT_TOKEN\");\nconst chatId = env.get(\"TELEGRAM_CHAT_ID\");\nif (!token || !chatId) {\n    node.error(\"Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in this tab's Environment Variables\");\n    return null;\n}\nmsg.url = \"https://api.telegram.org/bot\" + token + \"/sendMessage\";\nmsg.headers = { \"content-type\": \"application/json\" };\nmsg.payload = { chat_id: chatId, text: \"الشحنة جاهزة للاستلام\" };\nreturn msg;",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 200,
+    "wires": [
+      [
+        "http_telegram"
+      ]
+    ]
+  },
+  {
+    "id": "http_telegram",
+    "type": "http request",
+    "z": "tab_delivery",
+    "name": "Telegram sendMessage",
+    "method": "POST",
+    "ret": "obj",
+    "paytoqs": "ignore",
+    "url": "",
+    "tls": "",
+    "persist": false,
+    "proxy": "",
+    "insecureHTTPParser": false,
+    "authType": "",
+    "senderr": false,
+    "headers": [],
+    "x": 860,
+    "y": 200,
+    "wires": [
+      [
+        "dbg_telegram"
+      ]
+    ]
+  },
+  {
+    "id": "dbg_telegram",
+    "type": "debug",
+    "z": "tab_delivery",
+    "name": "Telegram API reply",
+    "active": true,
+    "tosidebar": true,
+    "console": false,
+    "tostatus": false,
+    "complete": "payload",
+    "targetType": "msg",
+    "statusVal": "",
+    "statusType": "auto",
+    "x": 1090,
+    "y": 200,
+    "wires": []
+  },
+  {
+    "id": "fn_mail_delivered",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Build 'delivered' email",
+    "func": "const p = msg.payload;\nconst to = env.get(\"MANAGER_EMAIL\");\nif (!to) { node.error(\"Set MANAGER_EMAIL in this tab's Environment Variables\"); return null; }\nreturn {\n    to: to,\n    topic: \"Delivery confirmed - \" + p.shipment_id,\n    payload: \"Shipment \" + p.shipment_id + \" was delivered.\\n\" +\n             \"Delivery confirmed by the Raspberry Pi at: \" + p.timestamp + \"\\n\"\n};",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 260,
+    "wires": [
+      [
+        "email_out"
+      ]
+    ]
+  },
+  {
+    "id": "fn_mail_issue",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Build 'issue' email",
+    "func": "const p = msg.payload;\nconst to = env.get(\"MANAGER_EMAIL\");\nif (!to) { node.error(\"Set MANAGER_EMAIL in this tab's Environment Variables\"); return null; }\nconst hasLoc = (p.latitude !== null && p.latitude !== undefined && p.longitude !== null && p.longitude !== undefined);\nreturn {\n    to: to,\n    topic: \"Issue reported - shipment \" + p.shipment_id,\n    payload: \"Shipment ID: \" + p.shipment_id + \"\\n\" +\n             \"Issue type: \" + p.issue_type + \"\\n\" +\n             \"Details: \" + (p.details || \"-\") + \"\\n\" +\n             \"Time: \" + p.timestamp + \"\\n\" +\n             \"Last known location: \" + (hasLoc ? p.latitude + \", \" + p.longitude : \"no location received yet\") + \"\\n\" +\n             \"Last location update time: \" + (p.last_location_timestamp || \"n/a\") + \"\\n\"\n};",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 340,
+    "wires": [
+      [
+        "email_out"
+      ]
+    ]
+  },
+  {
+    "id": "email_out",
+    "type": "e-mail",
+    "z": "tab_delivery",
+    "server": "smtp.gmail.com",
+    "port": "465",
+    "authtype": "BASIC",
+    "saslformat": true,
+    "token": "oauth2Response.access_token",
+    "secure": true,
+    "tls": true,
+    "name": "",
+    "dname": "Send email",
+    "x": 870,
+    "y": 300,
+    "wires": []
+  },
+  {
+    "id": "fn_issue_text",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Format issue info",
+    "func": "const p = msg.payload;\nreturn { payload: \"Type: \" + p.issue_type + \"  |  Details: \" + (p.details || \"-\") + \"  |  Time: \" + String(p.timestamp).replace(\"T\", \" \") };",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 420,
+    "wires": [
+      [
+        "ui_issue_info"
+      ]
+    ]
+  },
+  {
+    "id": "fn_nfc_text",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Format last NFC event",
+    "func": "const p = msg.payload;\nlet text;\nif (p.event === \"picked_up\")              { text = \"Courier card accepted -> PICKED_UP\"; }\nelse if (p.event === \"customer_verified\") { text = \"Customer card accepted -> CUSTOMER_VERIFIED\"; }\nelse { text = \"Card rejected (\" + (p.reason || \"unknown\") + \", card: \" + (p.card || \"?\") + \")\"; }\nreturn { payload: text + \"   @ \" + String(p.timestamp).replace(\"T\", \" \") };",
+    "outputs": 1,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 620,
+    "y": 480,
+    "wires": [
+      [
+        "ui_nfc"
+      ]
+    ]
+  },
+  {
+    "id": "ui_nfc",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_ship",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "name": "Last NFC event",
+    "label": "Last NFC event",
+    "format": "{{msg.payload}}",
+    "layout": "col-left",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 850,
+    "y": 480,
+    "wires": []
+  },
+  {
+    "id": "ui_issue_info",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_issue",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "name": "Issue information",
+    "label": "Issue information",
+    "format": "{{msg.payload}}",
+    "layout": "col-left",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 860,
+    "y": 420,
+    "wires": []
+  },
+  {
+    "id": "c2",
+    "type": "comment",
+    "z": "tab_delivery",
+    "name": "2) STATE from the Raspberry Pi -> Dashboard (+ enable Confirm button only when CUSTOMER_VERIFIED)",
+    "info": "",
+    "x": 420,
+    "y": 560,
+    "wires": []
+  },
+  {
+    "id": "in_state",
+    "type": "mqtt in",
+    "z": "tab_delivery",
+    "name": "Pi state",
+    "topic": "delivery/+/state",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 620,
+    "wires": [
+      [
+        "fn_state"
+      ]
+    ]
+  },
+  {
+    "id": "fn_state",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Split state for widgets",
+    "func": "// Only formatting/routing. The Raspberry Pi decided the state - we just display it.\nconst p = msg.payload;\nif (!p || !p.state) { return null; }\nconst canConfirm = (p.state === \"CUSTOMER_VERIFIED\");\nreturn [\n    { payload: p.shipment_id },\n    { payload: p.state },\n    { payload: p.customer_verified ? \"Yes\" : \"No\" },\n    { enabled: canConfirm }          // enables / disables the Confirm Delivery button (the Pi still validates)\n];",
+    "outputs": 4,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 620,
+    "wires": [
+      [
+        "ui_ship_id"
+      ],
+      [
+        "ui_status"
+      ],
+      [
+        "ui_cust"
+      ],
+      [
+        "ui_btn_confirm"
+      ]
+    ]
+  },
+  {
+    "id": "ui_ship_id",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_ship",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "name": "Shipment ID",
+    "label": "Shipment ID",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 640,
+    "y": 580,
+    "wires": []
+  },
+  {
+    "id": "ui_status",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_ship",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "Current Status",
+    "label": "Current Status",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 640,
+    "y": 620,
+    "wires": []
+  },
+  {
+    "id": "ui_cust",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_ship",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "name": "Customer card verified",
+    "label": "Customer card verified",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 660,
+    "y": 660,
+    "wires": []
+  },
+  {
+    "id": "inj_disable",
+    "type": "inject",
+    "z": "tab_delivery",
+    "name": "Disable Confirm at start",
+    "props": [
+      {
+        "p": "enabled",
+        "v": "false",
+        "vt": "bool"
+      }
+    ],
+    "repeat": "",
+    "crontab": "",
+    "once": true,
+    "onceDelay": "0.1",
+    "topic": "",
+    "x": 380,
+    "y": 720,
+    "wires": [
+      [
+        "ui_btn_confirm"
+      ]
+    ]
+  },
+  {
+    "id": "ui_btn_confirm",
+    "type": "ui-button",
+    "z": "tab_delivery",
+    "group": "g_act",
+    "name": "Confirm Delivery",
+    "label": "Confirm Delivery",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "emulateClick": false,
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "",
+    "className": "",
+    "icon": "",
+    "iconPosition": "left",
+    "payload": "confirm",
+    "payloadType": "str",
+    "topic": "topic",
+    "topicType": "msg",
+    "buttonColor": "green",
+    "textColor": "",
+    "iconColor": "",
+    "enableClick": true,
+    "enablePointerdown": false,
+    "pointerdownPayload": "",
+    "pointerdownPayloadType": "str",
+    "enablePointerup": false,
+    "pointerupPayload": "",
+    "pointerupPayloadType": "str",
+    "x": 650,
+    "y": 720,
+    "wires": [
+      [
+        "fn_confirm"
+      ]
+    ]
+  },
+  {
+    "id": "c3",
+    "type": "comment",
+    "z": "tab_delivery",
+    "name": "3) LOCATION from the Raspberry Pi -> Dashboard + Worldmap",
+    "info": "",
+    "x": 330,
+    "y": 800,
+    "wires": []
+  },
+  {
+    "id": "in_loc",
+    "type": "mqtt in",
+    "z": "tab_delivery",
+    "name": "Pi location",
+    "topic": "delivery/+/location",
+    "qos": "1",
+    "datatype": "json",
+    "broker": "broker1",
+    "nl": false,
+    "rap": true,
+    "rh": 0,
+    "inputs": 0,
+    "x": 130,
+    "y": 880,
+    "wires": [
+      [
+        "fn_loc"
+      ]
+    ]
+  },
+  {
+    "id": "fn_loc",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Split location for widgets",
+    "func": "// Only formatting/routing. NO geofence here - the Raspberry Pi does that.\nconst p = msg.payload;\nif (!p || p.latitude === undefined || p.longitude === undefined) { return null; }\nconst when = String(p.timestamp);\nreturn [\n    { payload: String(p.latitude) },\n    { payload: String(p.longitude) },\n    { payload: when.replace(\"T\", \" \") },\n    { payload: \"Source: OwnTracks (courier phone) via HiveMQ -> Raspberry Pi.  Last fix: \" + when.replace(\"T\", \" \") },\n    { payload: { name: \"Courier\", lat: p.latitude, lon: p.longitude, icon: \"car\", iconColor: \"red\" } }\n];",
+    "outputs": 5,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 360,
+    "y": 880,
+    "wires": [
+      [
+        "ui_lat"
+      ],
+      [
+        "ui_lon"
+      ],
+      [
+        "ui_loc_time"
+      ],
+      [
+        "ui_ot_info"
+      ],
+      [
+        "wm1"
+      ]
+    ]
+  },
+  {
+    "id": "ui_lat",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_loc",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "name": "Last known latitude",
+    "label": "Last known latitude",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 660,
+    "y": 820,
+    "wires": []
+  },
+  {
+    "id": "ui_lon",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_loc",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "Last known longitude",
+    "label": "Last known longitude",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 660,
+    "y": 860,
+    "wires": []
+  },
+  {
+    "id": "ui_loc_time",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_loc",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "name": "Last location update time",
+    "label": "Last location update time",
+    "format": "{{msg.payload}}",
+    "layout": "row-spread",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 680,
+    "y": 900,
+    "wires": []
+  },
+  {
+    "id": "ui_ot_info",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_loc",
+    "order": 4,
+    "width": 0,
+    "height": 0,
+    "name": "OwnTracks information",
+    "label": "OwnTracks information",
+    "format": "{{msg.payload}}",
+    "layout": "col-left",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 670,
+    "y": 940,
+    "wires": []
+  },
+  {
+    "id": "wm1",
+    "type": "worldmap",
+    "z": "tab_delivery",
+    "name": "Worldmap (courier)",
+    "lat": "",
+    "lon": "",
+    "zoom": "",
+    "layer": "OSMG",
+    "cluster": "",
+    "maxage": "",
+    "usermenu": "show",
+    "layers": "show",
+    "panit": "false",
+    "panlock": "false",
+    "zoomlock": "false",
+    "hiderightclick": "false",
+    "coords": "none",
+    "showgrid": "false",
+    "allowFileDrop": "false",
+    "path": "/worldmap",
+    "overlist": "DR,CO,RA,DN,HM",
+    "maplist": "OSMG,OSMC,EsriC,EsriS,EsriT,EsriDG,UKOS",
+    "mapname": "",
+    "mapurl": "",
+    "mapopt": "",
+    "mapwms": false,
+    "x": 660,
+    "y": 990,
+    "wires": []
+  },
+  {
+    "id": "ui_wm_link",
+    "type": "ui-template",
+    "z": "tab_delivery",
+    "group": "g_loc",
+    "page": "",
+    "ui": "",
+    "name": "Worldmap link",
+    "order": 5,
+    "width": 0,
+    "height": 0,
+    "head": "",
+    "format": "<template>\n  <a href=\"/worldmap\" target=\"_blank\">Open Worldmap (courier position)</a>\n</template>",
+    "storeOutMessages": false,
+    "passthru": false,
+    "resendOnRefresh": false,
+    "templateScope": "local",
+    "className": "",
+    "x": 680,
+    "y": 1040,
+    "wires": [
+      []
+    ]
+  },
+  {
+    "id": "c4",
+    "type": "comment",
+    "z": "tab_delivery",
+    "name": "4) COMMANDS: Dashboard buttons -> MQTT -> Raspberry Pi (the Pi validates and decides)",
+    "info": "",
+    "x": 400,
+    "y": 1120,
+    "wires": []
+  },
+  {
+    "id": "fn_confirm",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Build confirm_delivery command",
+    "func": "// The button does NOT change any state. It only asks the Raspberry Pi.\nconst id = env.get(\"SHIPMENT_ID\");\nconst cmd = { command: \"confirm_delivery\", shipment_id: id, timestamp: new Date().toISOString() };\nreturn [\n    { topic: \"delivery/\" + id + \"/commands\", payload: cmd },\n    { payload: \"Sent confirm_delivery @ \" + cmd.timestamp + \" - waiting for the Raspberry Pi (watch the Event log).\" }\n];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 930,
+    "y": 720,
+    "wires": [
+      [
+        "out_cmd"
+      ],
+      [
+        "ui_cmd_status"
+      ]
+    ]
+  },
+  {
+    "id": "ui_dd_issue",
+    "type": "ui-dropdown",
+    "z": "tab_delivery",
+    "group": "g_issue",
+    "name": "Issue Type",
+    "label": "Issue Type",
+    "tooltip": "",
+    "order": 1,
+    "width": 0,
+    "height": 0,
+    "passthru": false,
+    "multiple": false,
+    "chips": false,
+    "clearable": false,
+    "options": [
+      {
+        "label": "العميل غير متاح",
+        "value": "العميل غير متاح",
+        "type": "str"
+      },
+      {
+        "label": "مشكلة في المركبة",
+        "value": "مشكلة في المركبة",
+        "type": "str"
+      },
+      {
+        "label": "مشكلة في الشحنة",
+        "value": "مشكلة في الشحنة",
+        "type": "str"
+      },
+      {
+        "label": "تأخير غير مخطط",
+        "value": "تأخير غير مخطط",
+        "type": "str"
+      }
+    ],
+    "payload": "",
+    "topic": "issue_type",
+    "topicType": "str",
+    "className": "",
+    "x": 140,
+    "y": 1200,
+    "wires": [
+      [
+        "fn_store"
+      ]
+    ]
+  },
+  {
+    "id": "ui_in_details",
+    "type": "ui-text-input",
+    "z": "tab_delivery",
+    "group": "g_issue",
+    "name": "Issue Details",
+    "label": "Details (optional)",
+    "tooltip": "",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "topic": "issue_details",
+    "topicType": "str",
+    "mode": "text",
+    "delay": 300,
+    "passthru": false,
+    "sendOnDelay": true,
+    "sendOnBlur": true,
+    "sendOnEnter": true,
+    "className": "",
+    "clearable": false,
+    "icon": "",
+    "iconPosition": "prepend",
+    "iconInnerPosition": "inside",
+    "x": 150,
+    "y": 1260,
+    "wires": [
+      [
+        "fn_store"
+      ]
+    ]
+  },
+  {
+    "id": "fn_store",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Remember issue type/details",
+    "func": "// Just remembers what the user typed (msg.topic = \"issue_type\" or \"issue_details\").\n// Nothing is sent until the Report Issue button is pressed.\nflow.set(msg.topic, msg.payload);\nreturn null;",
+    "outputs": 0,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 1230,
+    "wires": []
+  },
+  {
+    "id": "ui_btn_report",
+    "type": "ui-button",
+    "z": "tab_delivery",
+    "group": "g_issue",
+    "name": "Report Issue",
+    "label": "Report Issue",
+    "order": 3,
+    "width": 0,
+    "height": 0,
+    "emulateClick": false,
+    "tooltip": "",
+    "color": "",
+    "bgcolor": "",
+    "className": "",
+    "icon": "",
+    "iconPosition": "left",
+    "payload": "report",
+    "payloadType": "str",
+    "topic": "topic",
+    "topicType": "msg",
+    "buttonColor": "red",
+    "textColor": "",
+    "iconColor": "",
+    "enableClick": true,
+    "enablePointerdown": false,
+    "pointerdownPayload": "",
+    "pointerdownPayloadType": "str",
+    "enablePointerup": false,
+    "pointerupPayload": "",
+    "pointerupPayloadType": "str",
+    "x": 140,
+    "y": 1320,
+    "wires": [
+      [
+        "fn_report"
+      ]
+    ]
+  },
+  {
+    "id": "fn_report",
+    "type": "function",
+    "z": "tab_delivery",
+    "name": "Build issue_report command",
+    "func": "// Only sends a command. The Raspberry Pi records the real issue.\nconst type = flow.get(\"issue_type\");\nif (!type) {\n    node.status({fill: \"red\", shape: \"ring\", text: \"no issue type\"});\n    return [null, { payload: \"Choose an Issue Type first, then press Report Issue.\" }];\n}\nconst id = env.get(\"SHIPMENT_ID\");\nconst cmd = {\n    command: \"issue_report\",\n    shipment_id: id,\n    issue_type: type,\n    details: flow.get(\"issue_details\") || \"\",\n    timestamp: new Date().toISOString()\n};\nnode.status({fill: \"green\", shape: \"dot\", text: \"command sent\"});\nreturn [\n    { topic: \"delivery/\" + id + \"/commands\", payload: cmd },\n    { payload: \"Sent issue_report @ \" + cmd.timestamp + \" - the Raspberry Pi will record it (watch the Event log).\" }\n];",
+    "outputs": 2,
+    "timeout": 0,
+    "noerr": 0,
+    "initialize": "",
+    "finalize": "",
+    "libs": [],
+    "x": 420,
+    "y": 1320,
+    "wires": [
+      [
+        "out_cmd"
+      ],
+      [
+        "ui_cmd_status"
+      ]
+    ]
+  },
+  {
+    "id": "out_cmd",
+    "type": "mqtt out",
+    "z": "tab_delivery",
+    "name": "Commands to Pi",
+    "topic": "",
+    "qos": "1",
+    "retain": "false",
+    "respTopic": "",
+    "contentType": "",
+    "userProps": "",
+    "correl": "",
+    "expiry": "",
+    "broker": "broker1",
+    "x": 1180,
+    "y": 1000,
+    "wires": []
+  },
+  {
+    "id": "ui_cmd_status",
+    "type": "ui-text",
+    "z": "tab_delivery",
+    "group": "g_act",
+    "order": 2,
+    "width": 0,
+    "height": 0,
+    "name": "Command status",
+    "label": "Command status",
+    "format": "{{msg.payload}}",
+    "layout": "col-left",
+    "style": false,
+    "font": "",
+    "fontSize": 16,
+    "color": "#717171",
+    "wrapText": true,
+    "className": "",
+    "x": 1180,
+    "y": 940,
+    "wires": []
+  }
+]
